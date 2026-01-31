@@ -83,21 +83,17 @@ main.Size = UDim2.new(0, 180, 0, 180)
 main.Position = UDim2.new(0.5, -90, 0.2, 0)
 main.BackgroundColor3 = Color3.fromRGB(25,25,25)
 
-local titleBar = Instance.new("Frame", main)
-titleBar.Size = UDim2.new(1, 0, 0, 25)
-titleBar.BackgroundColor3 = Color3.fromRGB(50,50,50)
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1, -20, 0, 24)
+title.Position = UDim2.new(0, 6, 0, 0)
+title.Text = "Kill Farm 2.0" -- NEW NAME
+title.Font = Enum.Font.Code
+title.TextSize = 14
+title.TextColor3 = Color3.new(1,1,1)
+title.BackgroundTransparency = 1
+title.TextXAlignment = Enum.TextXAlignment.Left
 
-local titleLabel = Instance.new("TextLabel", titleBar)
-titleLabel.Size = UDim2.new(1, -10, 1, 0)
-titleLabel.Position = UDim2.new(0, 5, 0, 0)
-titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "Kill Farm 2.0"
-titleLabel.TextColor3 = Color3.new(1,1,1)
-titleLabel.Font = Enum.Font.Code
-titleLabel.TextSize = 14
-titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local close = Instance.new("TextButton", titleBar)
+local close = Instance.new("TextButton", main)
 close.Size = UDim2.new(0, 20, 0, 20)
 close.Position = UDim2.new(1, -22, 0, 2)
 close.Text = "X"
@@ -168,51 +164,40 @@ end)
 
 -- DRAG
 local dragging, dragStart, startPos
-titleBar.InputBegan:Connect(function(i)
+title.InputBegan:Connect(function(i)
     if i.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = i.Position
         startPos = main.Position
-        i.Changed:Connect(function()
-            if i.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
     end
 end)
-
 UserInputService.InputChanged:Connect(function(i)
-    if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-        local delta = i.Position - dragStart
-        main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
+        local d = i.Position - dragStart
+        main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
     end
+end)
+UserInputService.InputEnded:Connect(function()
+    dragging = false
 end)
 
 -- NAN KILL FUNCTION
 local function ApplyNanMode()
     if not Character or not Humanoid then return end
-
-    -- Shrink character to Nan size
+    -- resize character to Nan
     for _, part in pairs(Character:GetChildren()) do
         if part:IsA("BasePart") then
             part.Size = part.Size * 0.2
         end
     end
-
+    -- scale humanoid
     Humanoid.HipHeight = Humanoid.HipHeight * 0.2
     Humanoid.WalkSpeed = 16
     Humanoid.JumpPower = 50
-
-    -- Equip Protein Egg
+    -- equip protein egg if exists
     local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg")
     if egg then
         Humanoid:EquipTool(egg)
-    end
-
-    -- Equip Punch tool
-    local punchTool = LocalPlayer.Backpack:FindFirstChild("Punch") or Character:FindFirstChild("Punch")
-    if punchTool then
-        Humanoid:EquipTool(punchTool)
     end
 end
 
@@ -254,7 +239,8 @@ RunService.Heartbeat:Connect(function()
             local head = p.Character:FindFirstChild("Head")
             local root = p.Character:FindFirstChild("HumanoidRootPart")
 
-            if hum and head and root and hum.Health > 0 then
+            if hum and head and root and hum.Health > 0 and not HitDebounce[p] then
+                HitDebounce[p] = true
                 firetouchinterest(head, Hand, 0)
                 firetouchinterest(head, Hand, 1)
 
@@ -263,6 +249,7 @@ RunService.Heartbeat:Connect(function()
                         getgenv().KillCount += 1
                         RefreshUI()
                     end
+                    HitDebounce[p] = nil
                 end)
             end
         end
@@ -275,4 +262,4 @@ LocalPlayer.Idled:Connect(function()
     VirtualUser:ClickButton2(Vector2.new())
 end)
 
-print("✅ Kill Farm 2.0 loaded with Nan Kill + Protein Egg + Fists")
+print("✅ Kill Farm 2.0 loaded with Nan Kill")
