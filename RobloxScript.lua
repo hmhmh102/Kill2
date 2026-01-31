@@ -1,3 +1,4 @@
+
 -- SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -21,7 +22,7 @@ local function AutoExecute()
     getgenv().AutoHop = true
     getgenv().NanKill = false
     getgenv().KillCount = 0
-    getgenv().WhitelistFriends = true -- NEW: whitelist friends toggle
+    getgenv().WhitelistFriends = true -- whitelist friends toggle
 
     -- CHARACTER VARS
     local Character, Humanoid, Hand, Punch
@@ -53,7 +54,7 @@ local function AutoExecute()
         end
     end
 
-    -- SERVER HOP FUNCTION
+    -- SERVER HOP FUNCTION (UPDATED)
     local function HopServer()
         local PlaceId = game.PlaceId
         local JobId = game.JobId
@@ -70,12 +71,18 @@ local function AutoExecute()
             end)
 
             if ok and data and data.data then
+                local foundServer = false
                 for _, server in ipairs(data.data) do
-                    if server.id ~= JobId and server.playing < server.maxPlayers then
+                    -- Skip full servers and current server
+                    if server.id ~= JobId and server.playing < server.maxPlayers and server.maxPlayers > 0 then
                         TeleportService:TeleportToPlaceInstance(PlaceId, server.id, LocalPlayer)
-                        return
+                        foundServer = true
+                        break
                     end
                 end
+
+                if foundServer then return end
+
                 Cursor = data.nextPageCursor
                 if not Cursor then break end
             else
@@ -83,6 +90,8 @@ local function AutoExecute()
             end
             task.wait(0.4)
         end
+
+        print("⚠️ No available servers found to hop to.")
     end
 
     -- GUI
@@ -293,7 +302,7 @@ local function AutoExecute()
         VirtualUser:ClickButton2(Vector2.new())
     end)
 
-    print("✅ Kill Farm 2.0 auto-executed with whitelist")
+    print("✅ Kill Farm 2.0 auto-executed with whitelist & safe server hop")
 end
 
 -- RUN AUTO EXECUTE
