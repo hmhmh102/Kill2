@@ -21,6 +21,7 @@ local function AutoExecute()
     getgenv().AutoHop = true
     getgenv().NanKill = false
     getgenv().KillCount = 0
+    getgenv().WhitelistFriends = true -- NEW: whitelist friends toggle
 
     -- CHARACTER VARS
     local Character, Humanoid, Hand, Punch
@@ -42,6 +43,15 @@ local function AutoExecute()
         task.wait(1)
         UpdateChar()
     end)
+
+    -- WHITELIST FUNCTION
+    local function IsWhitelisted(player)
+        if not getgenv().WhitelistFriends then return false end
+        if player == LocalPlayer then return true
+        elseif LocalPlayer:IsFriendsWith(player.UserId) then return true
+        else return false
+        end
+    end
 
     -- SERVER HOP FUNCTION
     local function HopServer()
@@ -80,7 +90,7 @@ local function AutoExecute()
     gui.ResetOnSpawn = false
 
     local main = Instance.new("Frame", gui)
-    main.Size = UDim2.new(0, 180, 0, 180)
+    main.Size = UDim2.new(0, 180, 0, 210)
     main.Position = UDim2.new(0.5, -90, 0.2, 0)
     main.BackgroundColor3 = Color3.fromRGB(25,25,25)
 
@@ -126,9 +136,16 @@ local function AutoExecute()
     nanKillToggle.TextColor3 = Color3.fromRGB(255, 255, 0)
     nanKillToggle.Text = "Nan Kill: OFF"
 
+    local whitelistToggle = Instance.new("TextButton", main)
+    whitelistToggle.Size = UDim2.new(1, -12, 0, 20)
+    whitelistToggle.Position = UDim2.new(0, 6, 0, 102)
+    whitelistToggle.Font = Enum.Font.Code
+    whitelistToggle.TextSize = 13
+    whitelistToggle.TextColor3 = Color3.fromRGB(0, 200, 255)
+
     local killLabel = Instance.new("TextLabel", main)
     killLabel.Size = UDim2.new(1, -12, 0, 20)
-    killLabel.Position = UDim2.new(0, 6, 0, 102)
+    killLabel.Position = UDim2.new(0, 6, 0, 126)
     killLabel.Font = Enum.Font.Code
     killLabel.TextSize = 13
     killLabel.BackgroundTransparency = 1
@@ -143,6 +160,7 @@ local function AutoExecute()
         hopToggle.TextColor3 = getgenv().AutoHop and Color3.fromRGB(0,255,0) or Color3.new(1,1,1)
 
         nanKillToggle.Text = "Nan Kill: " .. (getgenv().NanKill and "ON" or "OFF")
+        whitelistToggle.Text = "Whitelist Friends: " .. (getgenv().WhitelistFriends and "ON" or "OFF")
         killLabel.Text = "Kills: " .. getgenv().KillCount
     end
 
@@ -160,6 +178,11 @@ local function AutoExecute()
 
     nanKillToggle.MouseButton1Click:Connect(function()
         getgenv().NanKill = not getgenv().NanKill
+        RefreshUI()
+    end)
+
+    whitelistToggle.MouseButton1Click:Connect(function()
+        getgenv().WhitelistFriends = not getgenv().WhitelistFriends
         RefreshUI()
     end)
 
@@ -241,7 +264,7 @@ local function AutoExecute()
         Punch:Activate()
 
         for _, p in ipairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer and p.Character then
+            if not IsWhitelisted(p) and p.Character then
                 local hum = p.Character:FindFirstChildOfClass("Humanoid")
                 local head = p.Character:FindFirstChild("Head")
                 local root = p.Character:FindFirstChild("HumanoidRootPart")
@@ -251,7 +274,6 @@ local function AutoExecute()
                     firetouchinterest(head, Hand, 1)
                 end
 
-                -- FIXED kill counter
                 if hum and hum.Health <= 0 and not HitDebounce[p] then
                     HitDebounce[p] = true
                     getgenv().KillCount += 1
@@ -271,7 +293,7 @@ local function AutoExecute()
         VirtualUser:ClickButton2(Vector2.new())
     end)
 
-    print("✅ Kill Farm 2.0 auto-executed")
+    print("✅ Kill Farm 2.0 auto-executed with whitelist")
 end
 
 -- RUN AUTO EXECUTE
