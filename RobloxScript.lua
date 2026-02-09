@@ -1,5 +1,4 @@
 
--- SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TeleportService = game:GetService("TeleportService")
@@ -9,12 +8,10 @@ local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
 
--- AUTO EXECUTION
 local function AutoExecute()
     if getgenv().KillFarmLoaded then return end
     getgenv().KillFarmLoaded = true
 
-    -- SETTINGS
     local HOP_INTERVAL = 60
     getgenv().LastHopTime = getgenv().LastHopTime or tick()
 
@@ -22,14 +19,13 @@ local function AutoExecute()
     getgenv().AutoHop = true
     getgenv().NanKill = false
     getgenv().KillCount = 0
-    getgenv().WhitelistFriends = true -- whitelist friends toggle
+    getgenv().WhitelistFriends = true 
 
-    -- CHARACTER VARS
     local Character, Humanoid, Hand, Punch
     local LastAttack = 0
-    local HitDebounce = {} -- FIXED kill counter debounce
+    local HitDebounce = {} 
 
-    -- UPDATE CHARACTER
+
     local function UpdateChar()
         Character = LocalPlayer.Character
         if Character then
@@ -45,7 +41,7 @@ local function AutoExecute()
         UpdateChar()
     end)
 
-    -- WHITELIST FUNCTION
+
     local function IsWhitelisted(player)
         if not getgenv().WhitelistFriends then return false end
         if player == LocalPlayer then return true
@@ -54,7 +50,6 @@ local function AutoExecute()
         end
     end
 
-    -- SERVER HOP FUNCTION (UPDATED)
     local function HopServer()
         local PlaceId = game.PlaceId
         local JobId = game.JobId
@@ -73,7 +68,7 @@ local function AutoExecute()
             if ok and data and data.data then
                 local foundServer = false
                 for _, server in ipairs(data.data) do
-                    -- Skip full servers and current server
+                    
                     if server.id ~= JobId and server.playing < server.maxPlayers and server.maxPlayers > 0 then
                         TeleportService:TeleportToPlaceInstance(PlaceId, server.id, LocalPlayer)
                         foundServer = true
@@ -160,7 +155,6 @@ local function AutoExecute()
     killLabel.BackgroundTransparency = 1
     killLabel.TextColor3 = Color3.new(1,1,1)
 
-    -- REFRESH GUI
     local function RefreshUI()
         killToggle.Text = "Auto Kill: " .. (getgenv().AutoKill and "ON" or "OFF")
         killToggle.TextColor3 = getgenv().AutoKill and Color3.fromRGB(0,255,0) or Color3.new(1,1,1)
@@ -199,7 +193,6 @@ local function AutoExecute()
         gui:Destroy()
     end)
 
-    -- DRAG
     local dragging, dragStart, startPos
     titleBar.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -221,7 +214,6 @@ local function AutoExecute()
         end
     end)
 
-    -- NAN KILL FUNCTION
     local function ApplyNanMode()
         if not Character or not Humanoid then return end
 
@@ -242,7 +234,6 @@ local function AutoExecute()
         if punchTool then Humanoid:EquipTool(punchTool) end
     end
 
-    -- MAIN LOOP
     RunService.Heartbeat:Connect(function()
         local now = tick()
 
@@ -296,7 +287,6 @@ local function AutoExecute()
         end
     end)
 
-    -- ANTI AFK
     LocalPlayer.Idled:Connect(function()
         VirtualUser:CaptureController()
         VirtualUser:ClickButton2(Vector2.new())
@@ -305,7 +295,6 @@ local function AutoExecute()
     print("✅ Kill Farm 2.0 auto-executed with whitelist & safe server hop")
 end
 
--- RUN AUTO EXECUTE
 AutoExecute()
 LocalPlayer.CharacterAdded:Connect(function()
     task.wait(1)
